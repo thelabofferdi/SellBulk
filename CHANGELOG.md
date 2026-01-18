@@ -94,5 +94,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auth: 2/2 tests ✅
 - **Total: 65/65 tests passing** ✅
 
-[Unreleased]: https://github.com/VOTRE-USERNAME/SellBulk/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/VOTRE-USERNAME/SellBulk/releases/tag/v0.1.0
+[Unreleased]: https://github.com/thelabofferdi/SellBulk/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/thelabofferdi/SellBulk/releases/tag/v0.1.0

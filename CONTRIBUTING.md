@@ -80,7 +80,7 @@ Voir [Semantic Versioning](https://semver.org/) pour plus de détails.
 ### 1. Fork & Clone
 
 ```bash
-git clone https://github.com/TON-USERNAME/SellBulk.git
+git clone https://github.com/thelabofferdi/SellBulk.git
 cd SellBulk
 ```
 

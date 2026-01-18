@@ -2,7 +2,7 @@
 
 **Backend Rust déterministe pour l'automatisation des ventes WhatsApp**
 
-[![CI](https://github.com/VOTRE-USERNAME/SellBulk/workflows/Tests/badge.svg)](https://github.com/VOTRE-USERNAME/SellBulk/actions)
+[![CI](https://github.com/thelabofferdi/SellBulk/workflows/Tests/badge.svg)](https://github.com/thelabofferdi/SellBulk/actions)
 [![Tests](https://img.shields.io/badge/tests-65%2F65-brightgreen)]()
 [![Rust](https://img.shields.io/badge/rust-1.77%2B-orange)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()

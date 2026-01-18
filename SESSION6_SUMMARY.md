@@ -105,7 +105,7 @@ Mettre en place **CI/CD avec GitHub Actions** pour automatiser les tests à chaq
 
 **Ajouté au README** :
 ```markdown
-[![CI](https://github.com/VOTRE-USERNAME/SellBulk/workflows/Tests/badge.svg)]
+[![CI](https://github.com/thelabofferdi/SellBulk/workflows/Tests/badge.svg)]
 ```
 
 Badge qui affiche :
@@ -148,7 +148,7 @@ Badge qui affiche :
 
 **Voir les résultats** :
 ```
-https://github.com/VOTRE-USERNAME/SellBulk/actions
+https://github.com/thelabofferdi/SellBulk/actions
 ```
 
 ---
@@ -212,7 +212,7 @@ git push origin v1.0.0
 
 ```bash
 # 1. Fork le repo
-git clone https://github.com/TON-USERNAME/SellBulk.git
+git clone https://github.com/thelabofferdi/SellBulk.git
 
 # 2. Créer une branche
 git checkout -b feature/ma-feature
@@ -344,7 +344,7 @@ Avec le CI/CD en place, on peut tracker :
 git init
 
 # Ajouter remote
-git remote add origin https://github.com/TON-USERNAME/SellBulk.git
+git remote add origin https://github.com/thelabofferdi/SellBulk.git
 
 # Premier commit
 git add .
@@ -371,7 +371,7 @@ git add README.md
 git commit -m "docs: test CI"
 git push
 
-# Aller voir : https://github.com/TON-USERNAME/SellBulk/actions
+# Aller voir : https://github.com/thelabofferdi/SellBulk/actions
 # Les tests se lancent automatiquement !
 ```
 

@@ -1,6 +1,6 @@
 # SellBulk - Sellify Core
 
-[![CI](https://github.com/VOTRE-USERNAME/SellBulk/workflows/Tests/badge.svg)](https://github.com/VOTRE-USERNAME/SellBulk/actions)
+[![CI](https://github.com/thelabofferdi/SellBulk/workflows/Tests/badge.svg)](https://github.com/thelabofferdi/SellBulk/actions)
 [![Tests](https://img.shields.io/badge/tests-65%2F65-brightgreen)]()
 [![Coverage](https://img.shields.io/badge/coverage-codecov-blue)]()
 [![Rust](https://img.shields.io/badge/rust-1.77%2B-orange)]()
@@ -60,7 +60,7 @@ Toute la logique métier est **déterministe et basée sur des règles** - zéro
 ### Via Cargo
 
 ```bash
-git clone https://github.com/VOTRE-USERNAME/SellBulk.git
+git clone https://github.com/thelabofferdi/SellBulk.git
 cd SellBulk/sellify-core
 
 # Lancer les tests
@@ -88,11 +88,11 @@ curl http://localhost:3000/health
 
 ### Via Release Binaries
 
-Télécharge la dernière release depuis [Releases](https://github.com/VOTRE-USERNAME/SellBulk/releases):
+Télécharge la dernière release depuis [Releases](https://github.com/thelabofferdi/SellBulk/releases):
 
 ```bash
 # Linux x86_64
-wget https://github.com/VOTRE-USERNAME/SellBulk/releases/download/v0.1.0/sellify-server-linux-x86_64-v0.1.0.tar.gz
+wget https://github.com/thelabofferdi/SellBulk/releases/download/v0.1.0/sellify-server-linux-x86_64-v0.1.0.tar.gz
 tar -xzf sellify-server-linux-x86_64-v0.1.0.tar.gz
 chmod +x sellify-server
 
@@ -277,7 +277,7 @@ Les contributions sont les bienvenues ! Voir [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 # Fork & Clone
-git clone https://github.com/TON-USERNAME/SellBulk.git
+git clone https://github.com/thelabofferdi/SellBulk.git
 cd SellBulk
 
 # Créer une branche
@@ -359,8 +359,8 @@ Développé par **Sellify Team** avec ❤️ et Rust 🦀
 
 ## 📞 Support
 
-- **Issues** : [GitHub Issues](https://github.com/VOTRE-USERNAME/SellBulk/issues)
-- **Discussions** : [GitHub Discussions](https://github.com/VOTRE-USERNAME/SellBulk/discussions)
+- **Issues** : [GitHub Issues](https://github.com/thelabofferdi/SellBulk/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/thelabofferdi/SellBulk/discussions)
 
 ---
 
