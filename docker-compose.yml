@@ -1,0 +1,119 @@
+# Sellify - Production Deployment with Docker Compose
+
+version: '3.8'
+
+services:
+  # Sellify Core API (Rust)
+  sellify-core:
+    build:
+      context: ./sellify-core
+      dockerfile: Dockerfile
+    container_name: sellify-core
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+      - SELLIFY_API_KEY=${SELLIFY_API_KEY:-change-me-in-production}
+      - SELLIFY_DB_PATH=/data/sellify.db
+    volumes:
+      - sellify-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - sellify-network
+
+  # WhatsApp API (Node.js)
+  whatsapp-api:
+    build:
+      context: ./whatsapp-api
+      dockerfile: Dockerfile
+    container_name: whatsapp-api
+    ports:
+      - "8084:8084"
+    environment:
+      - NODE_ENV=production
+      - PORT=8084
+      - SELLIFY_API_URL=http://sellify-core:3000
+      - SELLIFY_API_KEY=${SELLIFY_API_KEY:-change-me-in-production}
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/whatsapp
+      - PROVIDER_ENABLED=true
+      - PROVIDER_HOST=session-manager
+      - PROVIDER_PORT=5656
+    depends_on:
+      - postgres
+      - sellify-core
+      - session-manager
+    volumes:
+      - whatsapp-instances:/app/instances
+    restart: unless-stopped
+    networks:
+      - sellify-network
+
+  # Session Manager (Go)
+  session-manager:
+    build:
+      context: ./session-manager
+      dockerfile: Dockerfile
+    container_name: session-manager
+    ports:
+      - "5656:5656"
+    environment:
+      - GLOBAL_AUTH_TOKEN=${SESSION_MANAGER_TOKEN:-global-token-change-me}
+      - HTTP_LOGS=false
+      - BODY_SIZE=5mb
+    volumes:
+      - session-data:/app/instances
+    restart: unless-stopped
+    networks:
+      - sellify-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sellify-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=whatsapp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - sellify-network
+
+  # Adminer (Database UI - optional, remove in production)
+  adminer:
+    image: adminer:latest
+    container_name: sellify-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - sellify-network
+    profiles:
+      - debug
+
+volumes:
+  sellify-data:
+    driver: local
+  whatsapp-instances:
+    driver: local
+  session-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  sellify-network:
+    driver: bridge

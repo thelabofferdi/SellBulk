@@ -1,0 +1,449 @@
+
+---
+
+# 📕 PRD — SELLIFY BACKEND (TAURI)
+
+**Version : 1.0**
+**Statut : final – prêt implémentation**
+**Portée : backend local uniquement (Rust + Tauri)**
+
+---
+
+## 0. Philosophie produit (fondation)
+
+### Principe fondamental
+
+> **Sellify est un moteur déterministe.**
+> L’IA n’est qu’un **outil de génération de texte**, jamais un décideur.
+
+### Conséquences techniques
+
+* aucune logique métier dans l’IA
+* aucune décision laissée au hasard
+* toute action est traçable, explicable, reproductible
+* toute dérive est bloquée **avant** l’envoi WhatsApp
+
+---
+
+## 1. Contraintes globales (NON négociables)
+
+1. Mono WhatsApp par machine
+2. Mono licence par HWID
+3. Fonctionnement offline-first
+4. IA stateless
+5. Aucun message client ne mentionne :
+
+   * IA
+   * humain
+   * escalade
+6. Toute action appartient à un ensemble fini
+7. Zéro autonomie IA
+
+---
+
+## 2. Architecture logique du backend
+
+```
+┌──────────────────────────┐
+│      Tauri Backend       │
+│          (Rust)          │
+├──────────────────────────┤
+│ License Engine           │
+│ Storage Engine           │
+│ Config Engine            │
+│ Knowledge Base Engine    │
+│ Conversation Engine      │
+│ Decision Engine (CORE)   │
+│ Quota & Anti-Ban Engine  │
+│ IA Gateway               │
+│ WhatsApp Gateway         │
+│ Alert Engine             │
+│ Audit & Safety Engine    │
+└──────────────────────────┘
+```
+
+---
+
+## 3. License Engine
+
+### Rôle
+
+* autoriser ou bloquer l’exécution
+* fournir les clés sensibles au runtime
+
+### Données gérées
+
+* HWID
+* clé d’activation
+* API key IA
+* date d’expiration
+* type de licence
+
+### Règles
+
+* licence stockée chiffrée localement
+* HWID vérifié à chaque démarrage
+* invalidation immédiate si incohérence
+* aucune clé exposée au frontend
+
+### États possibles
+
+```
+VALID
+INVALID
+EXPIRED
+HWID_MISMATCH
+TAMPERED
+```
+
+---
+
+## 4. Storage Engine
+
+### Rôle
+
+Stockage local **chiffré** et transactionnel.
+
+### Contenu stocké
+
+* conversations
+* états de conversation
+* base de connaissance
+* quotas
+* logs IA
+* audit
+* configuration
+
+### Contraintes
+
+* aucune dépendance cloud
+* lecture/écriture atomique
+* corruption détectable
+
+---
+
+## 5. Config Engine
+
+### Rôle
+
+Centraliser **tous les paramètres globaux**.
+
+### Paramètres obligatoires
+
+* horaires actifs
+* délais min / max de réponse
+* activation IA
+* numéros WhatsApp d’alerte
+* stratégie anti-ban
+* seuils d’escalade
+
+### Règle
+
+> Le Decision Engine ne lit **que** le Config Engine.
+
+---
+
+## 6. Knowledge Base Engine
+
+### Rôle
+
+Définir **l’univers autorisé** de l’IA.
+
+### Structure PRODUIT (canonique)
+
+```json
+Product {
+  id: UUID
+  name: string
+  short_description: string
+  long_description: string
+  price: string
+  keywords: string[]
+  objections: {
+    trigger: string
+    answer: string
+  }[]
+  media: {
+    images: FileRef[]
+    video: FileRef | null
+  }
+  media_policy: {
+    allow_images: boolean
+    allow_video: boolean
+  }
+}
+```
+
+### Règles
+
+* aucun produit non listé ne peut être mentionné
+* aucun média non attaché ne peut être envoyé
+* l’IA ne “voit” que ce contenu
+
+---
+
+## 7. Conversation Engine
+
+### Rôle
+
+Maintenir l’état **objectif** d’une discussion.
+
+### États autorisés
+
+```rust
+enum ConversationState {
+  Discovery,
+  Interest,
+  Intent,
+  Objection,
+  Negative,
+  Escalated,
+  Frozen
+}
+```
+
+### Transitions
+
+* déterministes
+* basées sur règles + signaux
+* jamais décidées par l’IA
+
+---
+
+## 8. Quota & Anti-Ban Engine
+
+### Rôle
+
+Empêcher tout comportement détectable comme automatisé.
+
+### Quotas gérés
+
+* messages / jour
+* messages / semaine
+* images / jour
+* vidéos / semaine
+
+### Délais
+
+* délai minimum entre réponses
+* délai allongé après média
+* jitter aléatoire contrôlé
+
+### Comportement
+
+* réduction progressive avant limite
+* blocage dur à dépassement
+* aucune exception
+
+---
+
+## 9. Decision Engine (CŒUR DU SYSTÈME)
+
+### Rôle
+
+Décider **quoi faire**, jamais comment l’IA parle.
+
+### Inputs
+
+* message entrant
+* état conversation
+* quotas
+* règles
+* horaires
+* base de connaissance
+
+### Actions possibles (fermées)
+
+```rust
+enum Action {
+  RespondText,
+  RespondWithMedia,
+  Ignore,
+  Delay,
+  AlertHuman,
+  StopAutomation
+}
+```
+
+### Interdictions
+
+* aucune autre action possible
+* aucune improvisation
+* aucune ambiguïté
+
+---
+
+## 10. Alert Engine (intervention humaine)
+
+### Rôle
+
+Notifier un humain **sans jamais le révéler au client**.
+
+### Déclencheurs
+
+* colère
+* menace
+* incompréhension répétée
+* mots sensibles
+* situation légale
+
+### Action
+
+* envoi WhatsApp vers numéro interne
+
+Exemple :
+
+```
+🚨 Intervention requise
+Client : +33XXXX
+État : Objection
+Dernier message : "..."
+```
+
+### Effet client
+
+* aucune mention
+* silence ou réponse neutre
+
+---
+
+## 11. IA Gateway
+
+### Rôle
+
+Générer **du texte uniquement**, sous contrainte.
+
+### L’IA NE PEUT PAS
+
+* décider
+* poser des questions libres
+* proposer contact humain
+* inventer des infos
+* envoyer média
+
+### Prompt toujours généré par backend
+
+* objectif unique
+* longueur max
+* ton imposé
+* interdictions explicites
+
+---
+
+## 12. Anti-Hallucination (double verrou)
+
+### Avant IA
+
+* validation produit
+* validation action
+* validation quota
+
+### Après IA
+
+* filtrage lexical
+* longueur
+* mots interdits
+* promesses commerciales
+
+En cas d’échec :
+
+* message rejeté
+* fallback neutre
+
+---
+
+## 13. WhatsApp Gateway
+
+### Rôle
+
+Interface purement technique.
+
+### Autorisé
+
+* recevoir messages
+* envoyer texte
+* envoyer média
+* QR code
+
+### Interdit
+
+* logique métier
+* règles
+* décisions
+
+---
+
+## 14. Audit & Safety Engine
+
+### Rôle
+
+Traçabilité complète.
+
+### Journalisation
+
+Pour chaque message :
+
+* message entrant
+* état
+* action choisie
+* prompt IA
+* réponse IA
+* message envoyé
+* quotas avant/après
+
+---
+
+## 15. Cas limites gérés (obligatoires)
+
+* IA indisponible
+* quota atteint
+* licence expirée
+* WhatsApp déconnecté
+* média manquant
+* message incompréhensible
+
+Dans tous les cas :
+
+> **Le système se tait plutôt que de risquer.**
+
+---
+
+## 16. Ordre d’implémentation recommandé
+
+1. License Engine
+2. Storage Engine
+3. Config Engine
+4. Knowledge Base Engine
+5. Conversation Engine
+6. Quota Engine
+7. Decision Engine
+8. Alert Engine
+9. IA Gateway
+10. WhatsApp Gateway
+11. Audit Engine
+
+---
+
+## 17. Definition of Done (backend)
+
+✔ aucune décision IA
+✔ aucun hallucination produit
+✔ aucune mention humaine client
+✔ quotas stricts respectés
+✔ audit complet
+✔ backend testable sans UI
+
+---
+
+## Conclusion
+
+Avec ce backend :
+
+* tu contrôles **100 % du comportement**
+* l’IA est **inoffensive par construction**
+* Sellify se comporte comme **un vrai agent humain prudent**
+* tu réduis **au maximum** les risques WhatsApp
+
+---
+
+
